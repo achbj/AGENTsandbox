@@ -1,0 +1,48 @@
+(version 1)
+(deny default)
+
+(allow process-exec)
+(allow process-fork)
+(allow signal)
+(allow sysctl-read)
+(allow mach-lookup)
+(allow ipc-posix-shm-read* ipc-posix-shm-write*)
+(allow file-map-executable)
+(allow file-ioctl)
+(allow iokit-open)
+(allow process-info*)
+(allow system-socket)
+
+;; System binaries, libraries, and certs
+(allow file-read*
+    (subpath "/System/Library")
+    (subpath "/Library")
+    (subpath "/usr")
+    (subpath "/bin")
+    (subpath "/sbin")
+    (subpath "/opt/homebrew")
+    (subpath "/private/etc")
+    (subpath "/etc")
+    (subpath "/dev"))
+
+;; Claude CLI binary/runtime (~/.local)
+(allow file-read*
+    (subpath (string-append (param "HOME_DIR") "/.local")))
+
+;; Explicitly block reading ~/.ssh
+(deny file-read*
+    (subpath (string-append (param "HOME_DIR") "/.ssh")))
+
+;; Claude config/auth state
+(allow file-read* file-write*
+    (subpath (param "CLAUDE_DIR"))
+    (literal (string-append (param "HOME_DIR") "/.claude.json")))
+
+;; Scoped workspace and temp directories
+(allow file-read* file-write*
+    (subpath (param "WORKSPACE_DIR"))
+    (subpath "/private/tmp")
+    (subpath "/private/var/folders"))
+
+;; Outbound network
+(allow network-outbound)
